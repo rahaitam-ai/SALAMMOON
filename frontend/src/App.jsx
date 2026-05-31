@@ -24,6 +24,14 @@ import AgenceDashboard from './pages/agence/AgenceDashboard';
 import AccountManagement from './pages/agence/AccountManagement';
 import Profile from './pages/agence/Profile';
 import AccountDetail from './pages/agence/AccountDetail';
+import DepositPage from './pages/agence/DepositPage';
+import DepositReceipt from './pages/agence/DepositReceipt';
+import WithdrawalSelection from './pages/agence/WithdrawalSelection';
+import WithdrawalPersonal from './pages/agence/WithdrawalPersonal';
+import WithdrawalPersonalConfirmation from './pages/agence/WithdrawalPersonalConfirmation';
+import WithdrawalCheque from './pages/agence/WithdrawalCheque';
+import WithdrawalChequeConfirmation from './pages/agence/WithdrawalChequeConfirmation';
+import WithdrawalPersonalReceipt from './pages/agence/WithdrawalPersonalReceipt';
 
 function RootRedirect() {
   const { user, loading } = useAuth();
@@ -226,6 +234,63 @@ function App() {
               </Layout>
             </ProtectedRoute>
           } />
+          {/* Deposit Routes */}
+          <Route path="/agence/dashboard/depot" element={
+            <ProtectedRoute roles={['agence', 'guichetier']}>
+              <Layout>
+                <DepositPage />
+              </Layout>
+            </ProtectedRoute>
+          } />
+          <Route path="/agence/dashboard/retrait" element={
+            <ProtectedRoute roles={['agence', 'guichetier']}>
+              <Layout>
+                <WithdrawalSelection />
+              </Layout>
+            </ProtectedRoute>
+          } />
+          <Route path="/agence/retrait/personnel" element={
+            <ProtectedRoute roles={['agence', 'guichetier']}>
+              <Layout>
+                <WithdrawalPersonal />
+              </Layout>
+            </ProtectedRoute>
+          } />
+          <Route path="/agence/retrait/personnel/confirmation" element={
+            <ProtectedRoute roles={['agence', 'guichetier']}>
+              <Layout>
+                <WithdrawalPersonalConfirmation />
+              </Layout>
+            </ProtectedRoute>
+          } />
+          <Route path="/agence/retrait/cheque" element={
+            <ProtectedRoute roles={['agence', 'guichetier']}>
+              <Layout>
+                <WithdrawalCheque />
+              </Layout>
+            </ProtectedRoute>
+          } />
+          <Route path="/agence/retrait/cheque/confirmation" element={
+            <ProtectedRoute roles={['agence', 'guichetier']}>
+              <Layout>
+                <WithdrawalChequeConfirmation />
+              </Layout>
+            </ProtectedRoute>
+          } />
+          <Route path="/agence/retrait/personnel/recu/:id" element={
+            <ProtectedRoute roles={['agence', 'guichetier']}>
+              <Layout>
+                <WithdrawalPersonalReceipt />
+              </Layout>
+            </ProtectedRoute>
+          } />
+          <Route path="/agence/dashboard/depot-recu/:id" element={
+            <ProtectedRoute roles={['agence', 'guichetier']}>
+              <Layout>
+                <DepositReceipt />
+              </Layout>
+            </ProtectedRoute>
+          } />
           <Route path="/profile" element={
             <ProtectedRoute>
               <Layout>
@@ -233,8 +298,6 @@ function App() {
               </Layout>
             </ProtectedRoute>
           } />
-
-
 
           {/* Default Route */}
           <Route path="/" element={<RootRedirect />} />

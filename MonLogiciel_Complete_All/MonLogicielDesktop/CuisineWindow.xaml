@@ -1,0 +1,14 @@
+﻿<Window x:Class="MonLogicielDesktop.CuisineWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        Title="Module Cuisine" Height="640" Width="980" Background="#121218" Foreground="White">
+  <Grid Margin="10">
+    <Grid.ColumnDefinitions><ColumnDefinition Width="300"/><ColumnDefinition Width="12"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+    <StackPanel Grid.Column="0">
+      <TextBlock Text="Outils Cuisine" FontSize="18"/>
+      <Button Content="Ajouter meuble" Click="btnAddMeuble_Click" Width="140" Height="36" Margin="0,8,0,0"/>
+      <Button Content="Sauvegarder" Click="btnSave_Click" Width="140" Height="36" Margin="0,8,0,0"/>
+      <Button Content="Charger" Click="btnLoad_Click" Width="140" Height="36" Margin="0,8,0,0"/>
+    </StackPanel>
+    <Border Grid.Column="2" Background="#1C1C24" Padding="12"><Canvas Name="canvasRoom" Background="#222228" Height="540" Width="600"/></Border>
+  </Grid>
+</Window>

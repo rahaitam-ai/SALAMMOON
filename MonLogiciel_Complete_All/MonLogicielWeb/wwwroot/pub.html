@@ -1,0 +1,9 @@
+﻿<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><title>Pub</title></head><body style="background:#111;color:#eee;font-family:Segoe UI;padding:20px">
+<h2>Module Pub (Web)</h2>
+<input id="n" placeholder="Nom"/><br/><textarea id="t" placeholder="Texte"></textarea><br/><input id="i" placeholder="Image URL"/><br/><button onclick="c()">Créer</button>
+<div id="list"></div>
+<script>
+async function load(){ let r = await fetch("/api/pub"); let d = await r.json(); let s=""; d.forEach(x=> s+=<div style="background:#222;padding:10px;margin:8px"><b>${x.name}</b><p>${x.text}</p><img src="${x.imageUrl||''}" style="max-width:200px"/></div>); document.getElementById("list").innerHTML=s;}
+async function c(){ await fetch("/api/pub",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({name:document.getElementById("n").value,text:document.getElementById("t").value,imageUrl:document.getElementById("i").value})}); load(); }
+load();
+</script></body></html>

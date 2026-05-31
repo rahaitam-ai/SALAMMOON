@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { HiOutlineUser, HiOutlineHome, HiOutlineUsers, HiOutlineOfficeBuilding, HiOutlineCube, HiOutlineCollection, HiOutlineUserGroup, HiOutlineLogout, HiOutlineMenu, HiOutlineX, HiOutlineClipboardList, HiOutlineKey, HiOutlineBell, HiOutlineLibrary, HiOutlineSearch, HiOutlinePlus } from 'react-icons/hi';
+import { HiOutlineUser, HiOutlineHome, HiOutlineUsers, HiOutlineOfficeBuilding, HiOutlineCube, HiOutlineCollection, HiOutlineUserGroup, HiOutlineLogout, HiOutlineMenu, HiOutlineX, HiOutlineClipboardList, HiOutlineKey, HiOutlineBell, HiOutlineLibrary, HiOutlineSearch, HiOutlinePlus, HiOutlineCash } from 'react-icons/hi';
 import toast from 'react-hot-toast';
 import logo from '../assets/al-barid-bank.jpg';
 import AdminProfileDropdown from './AdminProfileDropdown';
@@ -25,6 +25,8 @@ const menuItems = {
   ],
   agence: [
     { path: '/agence/dashboard', label: 'Tableau de Bord', icon: HiOutlineHome },
+    { path: '/agence/dashboard/depot', label: 'Dépôt d\'Argent', icon: HiOutlineCash },
+    { path: '/agence/dashboard/retrait', label: 'Retrait d\'Argent', icon: HiOutlineCash },
     { path: '/agence/dashboard/ouvrir-compte', label: 'Ouvrir un Compte', icon: HiOutlineLibrary },
     { path: '/agence/dashboard/nouveau-client', label: 'Nouveau Client', icon: HiOutlineUserGroup },
     { path: '/agence/dashboard/consulter-clients', label: 'Consulter les Clients', icon: HiOutlineUsers },
@@ -32,6 +34,8 @@ const menuItems = {
   ],
   guichetier: [
     { path: '/agence/dashboard', label: 'Tableau de Bord', icon: HiOutlineHome },
+    { path: '/agence/dashboard/depot', label: 'Dépôt d\'Argent', icon: HiOutlineCash },
+    { path: '/agence/dashboard/retrait', label: 'Retrait d\'Argent', icon: HiOutlineCash },
     { path: '/agence/dashboard/ouvrir-compte', label: 'Ouvrir un Compte', icon: HiOutlineLibrary },
     { path: '/agence/dashboard/nouveau-client', label: 'Nouveau Client', icon: HiOutlineUserGroup },
     { path: '/agence/dashboard/consulter-clients', label: 'Consulter les Clients', icon: HiOutlineUsers },

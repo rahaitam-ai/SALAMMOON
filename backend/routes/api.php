@@ -45,10 +45,10 @@ Route::middleware('auth:sanctum')->group(function () {
 
         // Physical Agences table management
         Route::get('/agences-physiques', [\App\Http\Controllers\AgenceController::class, 'index']);
-        Route::get('/agences-physiques/{id}', [\App\Http\Controllers\AgenceController::class, 'show']);
+        Route::get('/agences-physiques/:id', [\App\Http\Controllers\AgenceController::class, 'show']);
         Route::post('/agences-physiques', [\App\Http\Controllers\AgenceController::class, 'store']);
-        Route::put('/agences-physiques/{id}', [\App\Http\Controllers\AgenceController::class, 'update']);
-        Route::delete('/agences-physiques/{id}', [\App\Http\Controllers\AgenceController::class, 'destroy']);
+        Route::put('/agences-physiques/:id', [\App\Http\Controllers\AgenceController::class, 'update']);
+        Route::delete('/agences-physiques/:id', [\App\Http\Controllers\AgenceController::class, 'destroy']);
 
         // Activity logs
         Route::get('/logs', [AdminController::class, 'activityLogs']);
@@ -75,13 +75,30 @@ Route::middleware('auth:sanctum')->group(function () {
 
         // Agences (Consulter les Agences)
         Route::get('/agences', [\App\Http\Controllers\AgenceController::class, 'index']);
-        Route::get('/agences/{id}', [\App\Http\Controllers\AgenceController::class, 'show']);
+        Route::get('/agences/:id', [\App\Http\Controllers\AgenceController::class, 'show']);
 
         // Account Types
         Route::get('/account-types', [AccountTypeController::class, 'index']);
         Route::post('/account-types', [AccountTypeController::class, 'store']);
         Route::put('/account-types/{accountType}', [AccountTypeController::class, 'update']);
         Route::delete('/account-types/{accountType}', [AccountTypeController::class, 'destroy']);
+    });
+
+    // Retrait d'Argent routes
+    Route::middleware(RoleMiddleware::class . ':agence,guichetier')->group(function () {
+        Route::get('/clients/search', [\App\Http\Controllers\Api\RetraitController::class, 'searchClient']);
+        Route::get('/comptes/by-client', [\App\Http\Controllers\Api\RetraitController::class, 'getAccountsByClient']);
+        Route::get('/retraits', [\App\Http\Controllers\Api\RetraitController::class, 'index']);
+        Route::post('/retraits', [\App\Http\Controllers\Api\RetraitController::class, 'store']);
+        Route::get('/retraits/{id}', [\App\Http\Controllers\Api\RetraitController::class, 'show']);
+        Route::get('/retraits/{id}/recu', [\App\Http\Controllers\Api\RetraitController::class, 'recuPdf']);
+        Route::post('/certificat-non-paiement', [\App\Http\Controllers\Api\RetraitController::class, 'storeCertificat']);
+        Route::get('/certificat-non-paiement/{id}/pdf', [\App\Http\Controllers\Api\RetraitController::class, 'certificatPdf']);
+    });
+
+    // Vérification de compte (pour dépôts et retraits)
+    Route::middleware(RoleMiddleware::class . ':agence,guichetier')->group(function () {
+        Route::post('/accounts/verify', [\App\Http\Controllers\Api\DepotController::class, 'verifyAccount']);
     });
 
     // Routes partagées pour la gestion opérationnelle
@@ -92,11 +109,23 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('accounts/form-data', [\App\Http\Controllers\Api\AccountController::class, 'getFormData']);
         Route::get('accounts/{id}/pdf', [\App\Http\Controllers\Api\AccountController::class, 'generatePdf']);
         Route::get('accounts/{id}/rib-pdf', [\App\Http\Controllers\Api\AccountController::class, 'generateRibPdf']);
+        Route::get('accounts/{id}/attestation-solde-pdf', [\App\Http\Controllers\Api\AccountController::class, 'generateAttestationSoldePdf']);
+        Route::get('accounts/{id}/historique-pdf', [\App\Http\Controllers\Api\AccountController::class, 'generateHistoryPdf']);
+        Route::get('accounts/{id}/operations', [\App\Http\Controllers\Api\AccountController::class, 'operationsHistory']);
         Route::apiResource('accounts', \App\Http\Controllers\Api\AccountController::class);
     });
 
     // Agence routes
     Route::middleware(RoleMiddleware::class . ':agence,guichetier')->prefix('agence')->group(function () {
         Route::get('/dashboard', [AgenceController::class, 'dashboard']);
+    });
+
+    // Dépôt d'Argent routes
+    Route::middleware(RoleMiddleware::class . ':agence,guichetier')->group(function () {
+        Route::get('/comptes/recherche', [\App\Http\Controllers\Api\DepotController::class, 'rechercheCompte']);
+        Route::get('/depots', [\App\Http\Controllers\Api\DepotController::class, 'index']);
+        Route::post('/depots', [\App\Http\Controllers\Api\DepotController::class, 'store']);
+        Route::get('/depots/{id}', [\App\Http\Controllers\Api\DepotController::class, 'show']);
+        Route::get('/depots/{id}/recu', [\App\Http\Controllers\Api\DepotController::class, 'recuPdf']);
     });
 });

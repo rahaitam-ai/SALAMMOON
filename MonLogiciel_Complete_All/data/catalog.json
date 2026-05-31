@@ -1,0 +1,16 @@
+﻿{
+  "panneaux": [
+    {"id":1,"name":"Panneau LED 600x300","width_mm":600,"height_mm":300,"material":"LED","price_mad":1200},
+    {"id":2,"name":"Panneau PVC 2000x1000","width_mm":2000,"height_mm":1000,"material":"PVC","price_mad":3500},
+    {"id":3,"name":"Sticker Vinyle 500x200","width_mm":500,"height_mm":200,"material":"Vinyl","price_mad":150}
+  ],
+  "cuisines": [
+    {"id":1,"name":"Meuble bas 80cm","type":"meuble_bas","width_mm":800,"height_mm":720,"depth_mm":600,"price_mad":850},
+    {"id":2,"name":"Meuble haut 60cm","type":"meuble_haut","width_mm":600,"height_mm":720,"depth_mm":320,"price_mad":650},
+    {"id":3,"name":"Plan de travail Quartz 3m","type":"plan_travail","width_mm":3000,"depth_mm":600,"price_mad":4200}
+  ],
+  "clients": [
+    {"id":1,"name":"Société A","phone":"+212600000001","email":"contact@societea.ma","address":"Casablanca, Maroc"},
+    {"id":2,"name":"M. Badr","phone":"+212600000002","email":"badr@example.com","address":"Rabat, Maroc"}
+  ]
+}

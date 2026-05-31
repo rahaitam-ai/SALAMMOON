@@ -11,7 +11,9 @@ import {
   HiOutlineArrowLeft,
   HiOutlineChevronRight,
   HiOutlineDocumentText,
-  HiOutlineDownload
+  HiOutlineDownload,
+  HiOutlineEye,
+  HiOutlineEyeOff
 } from 'react-icons/hi';
 import toast from 'react-hot-toast';
 
@@ -20,6 +22,12 @@ export default function AccountDetail() {
   const navigate = useNavigate();
   const [account, setAccount] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [showInitialBalance, setShowInitialBalance] = useState(false);
+
+  const formatCurrency = (value) => {
+    const amount = Number(value ?? 0);
+    return amount.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  };
 
   useEffect(() => {
     fetchAccountDetails();
@@ -83,6 +91,29 @@ export default function AccountDetail() {
     }
   };
 
+  const handlePrintAttestationSolde = async (accountId, clientCin, clientNom, clientPrenom) => {
+    const toastId = toast.loading("Génération de l'attestation de solde...");
+    try {
+      const response = await api.get(`/accounts/${accountId}/attestation-solde-pdf`, {
+        responseType: 'blob'
+      });
+      const blob = new Blob([response.data], { type: 'application/pdf' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      const safeName = `${clientNom || 'client'}_${clientPrenom || ''}`.replace(/\s+/g, '_');
+      link.setAttribute('download', `Attestation_Solde_${safeName}_${account.numero_compte || accountId}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+      toast.success("Attestation de solde téléchargée !", { id: toastId });
+    } catch (err) {
+      console.error(err);
+      toast.error("Erreur lors de la génération de l'attestation", { id: toastId });
+    }
+  };
+
   if (loading) {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', gap: 16 }}>
@@ -119,8 +150,7 @@ export default function AccountDetail() {
               <p className="modal-eyebrow" style={{ color: '#d4a017', fontWeight: 800, letterSpacing: '0.1em', marginBottom: 4, textTransform: 'uppercase', fontSize: 11 }}>Détails du Compte Bancaire</p>
               <h2 className="modal-title syne" style={{ margin: 0, fontSize: '1.6rem', color: '#0f1929', fontWeight: 800 }}>N° {account.numero_compte}</h2>
               
-              {/* Yellow Receipt Download Button */}
-              <div style={{ marginTop: 10, marginBottom: 8 }}>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginTop: 10, marginBottom: 8 }}>
                 <button
                   onClick={() => handlePrintRIB(account.id, account.client?.cin)}
                   style={{
@@ -134,7 +164,10 @@ export default function AccountDetail() {
                     cursor: 'pointer',
                     boxShadow: '0 4px 12px rgba(250, 211, 31, 0.25)',
                     transition: 'all 0.2s',
-                    fontFamily: 'Inter, sans-serif'
+                    fontFamily: 'Inter, sans-serif',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 8
                   }}
                   onMouseOver={(e) => {
                     e.currentTarget.style.transform = 'translateY(-1px)';
@@ -149,6 +182,65 @@ export default function AccountDetail() {
                 >
                   Télécharger reçu d'ouverture de compte
                 </button>
+                <button
+                  onClick={() => handlePrintAttestationSolde(account.id, account.client?.cin, account.client?.nom, account.client?.prenom)}
+                  style={{
+                    background: '#0f1929',
+                    color: '#fff',
+                    border: 'none',
+                    padding: '8px 16px',
+                    borderRadius: '10px',
+                    fontSize: '12px',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    boxShadow: '0 4px 12px rgba(15, 25, 41, 0.18)',
+                    transition: 'all 0.2s',
+                    fontFamily: 'Inter, sans-serif',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 8
+                  }}
+                  onMouseOver={(e) => {
+                    e.currentTarget.style.transform = 'translateY(-1px)';
+                    e.currentTarget.style.boxShadow = '0 6px 16px rgba(15, 25, 41, 0.25)';
+                    e.currentTarget.style.background = '#15233d';
+                  }}
+                  onMouseOut={(e) => {
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.boxShadow = '0 4px 12px rgba(15, 25, 41, 0.18)';
+                    e.currentTarget.style.background = '#0f1929';
+                  }}
+                >
+                  <HiOutlineDocumentText size={16} />
+                  Télécharger Attestation de Solde
+                </button>
+              </div>
+
+              <div style={{ display:'flex', alignItems:'center', gap: 10, marginTop: 12, padding: '14px 16px', background: '#f8fafc', borderRadius: 16, border: '1px solid rgba(212, 160, 23, 0.15)', maxWidth: 380, transition: 'background 0.25s ease' }}>
+                <div style={{ flex: 1 }}>
+                  <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', gap: 12 }}>
+                    <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Solde Initial</span>
+                    <button
+                      type="button"
+                      onClick={() => setShowInitialBalance(prev => !prev)}
+                      aria-label={showInitialBalance ? 'Masquer le solde initial' : 'Afficher le solde initial'}
+                      style={{
+                        border: 'none',
+                        background: 'transparent',
+                        cursor: 'pointer',
+                        padding: 6,
+                        borderRadius: 10,
+                        color: showInitialBalance ? '#0f1929' : '#6b7280',
+                        transition: 'color 0.15s ease, transform 0.15s ease'
+                      }}
+                    >
+                      {showInitialBalance ? <HiOutlineEyeOff size={20} /> : <HiOutlineEye size={20} />}
+                    </button>
+                  </div>
+                  <p style={{ margin: '6px 0 0 0', fontSize: 16, fontWeight: 700, color: '#0f1929', letterSpacing: '0.02em', minHeight: 26, transition: 'opacity 0.25s ease, transform 0.25s ease', opacity: 1, transform: showInitialBalance ? 'translateY(0)' : 'translateY(0)' }}>
+                    {showInitialBalance ? `${formatCurrency(account.balance)} MAD` : '********'}
+                  </p>
+                </div>
               </div>
 
               <p className="modal-subtitle" style={{ margin: '4px 0 0 0', color: 'var(--text-secondary)', fontSize: 13 }}>Type: {account.type?.name} · Créé le {new Date(account.created_at).toLocaleDateString()}</p>

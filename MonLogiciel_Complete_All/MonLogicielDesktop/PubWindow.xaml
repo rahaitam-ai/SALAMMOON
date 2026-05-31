@@ -1,0 +1,24 @@
+﻿<Window x:Class="MonLogicielDesktop.PubWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        Title="Module Pub" Height="600" Width="920" Background="#121218" Foreground="White">
+  <Grid Margin="10">
+    <Grid.ColumnDefinitions><ColumnDefinition Width="340"/><ColumnDefinition Width="12"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+    <StackPanel Grid.Column="0">
+      <TextBlock Text="Créer panneau" FontSize="18"/>
+      <TextBox Name="txtName" Margin="0,8,0,6" />
+      <TextBox Name="txtText" Margin="0,0,0,6" AcceptsReturn="True" Height="100" TextWrapping="Wrap" />
+      <Button Name="btnLoadImage" Content="Charger image" Width="140" Height="32" Click="btnLoadImage_Click"/>
+      <Image Name="previewImage" Height="120" Stretch="Uniform"/>
+      <Button Name="btnAdd" Content="Ajouter" Width="120" Height="36" Margin="0,8,0,0" Click="btnAdd_Click"/>
+      <Separator Margin="0,12,0,12"/>
+      <ListBox Name="lstPanneaux" Height="260" SelectionChanged="lstPanneaux_SelectionChanged"/>
+    </StackPanel>
+    <Border Grid.Column="2" Background="#1C1C24" Padding="12">
+      <StackPanel>
+        <TextBlock Text="Aperçu" FontSize="18"/>
+        <Canvas Name="previewCanvas" Height="420" Background="#222228"/>
+        <Button Content="Exporter PNG" Click="btnExport_Click" Width="140" Height="36" Margin="0,8,0,0"/>
+      </StackPanel>
+    </Border>
+  </Grid>
+</Window>

@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import api from '../../api/axios';
-import { 
+import api from '../../api/axios';import {
   HiOutlineUserGroup, 
   HiOutlineLibrary, 
   HiOutlineCube, 
@@ -17,7 +16,8 @@ import {
   HiOutlineSparkles,
   HiOutlineIdentification,
   HiOutlineLocationMarker,
-  HiOutlineClipboardList
+  HiOutlineClipboardList,
+  HiOutlineCash
 } from 'react-icons/hi';
 import toast from 'react-hot-toast';
 
@@ -284,6 +284,7 @@ export default function AgenceDashboard() {
             <h2 style={{ fontSize:'1.1rem', fontWeight:800, color:'#0f1929', margin:'0 0 1.25rem 0' }}>Raccourcis</h2>
             <div style={{ display:'flex', flexDirection:'column', gap:'0.75rem' }}>
               {[
+                { to:'/agence/dashboard/depot',      icon:HiOutlineCash,      label:'Dépôt d\'Argent',       color:'#059669' },
                 { to:'/agence/dashboard/ouvrir-compte',   icon:HiOutlineLibrary,    label:'Créer un Compte',         color:'#b8963e' },
                 { to:'/agence/dashboard/nouveau-client',  icon:HiOutlineUserGroup,  label:'Nouveau Dossier Client',  color:'#2563eb' },
                 { to:'/agence/dashboard/consulter-clients',icon:HiOutlineSearch,   label:'Consulter les Clients',   color:'#10b981' },

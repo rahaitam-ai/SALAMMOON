@@ -1069,7 +1069,8 @@ export default function AccountManagement({ openClientModal = false, openAccount
     setLoadingAccounts(true);
     try {
       const res = await api.get('/accounts', { params: { search, search_mode: accountSearchMode, type_id: filterType, pack_id: filterPack } });
-      setAccounts(res.data.accounts);
+      const sortedAccounts = (res.data.accounts || []).slice().sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+      setAccounts(sortedAccounts);
     } catch { toast.error('Erreur lors du chargement des comptes'); }
     finally { setLoadingAccounts(false); }
   };
@@ -1167,12 +1168,23 @@ export default function AccountManagement({ openClientModal = false, openAccount
   const selectedPack = formData?.packs.find(p => p.id == accountForm.pack_id);
   const selectedClient = formData?.clients.find(c => c.id == accountForm.client_id);
 
-  const filteredClients = formData?.clients.filter(c => {
-    const term = clientSearch.toLowerCase();
-    if (searchType === 'nom') return `${c.nom} ${c.prenom}`.toLowerCase().includes(term);
-    if (searchType === 'date') return c.created_at && c.created_at.split('T')[0] === term;
-    return c.cin.toLowerCase().includes(term);
-  }) || [];
+  const visibleClients = (formData?.clients || [])
+    .slice()
+    .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+    .filter(c => {
+      const term = search.toLowerCase();
+      if (!term) return true;
+      if (clientSearchMode === 'name') {
+        return c.nom.toLowerCase().includes(term) || c.prenom.toLowerCase().includes(term);
+      }
+      if (clientSearchMode === 'cin') {
+        return c.cin.toLowerCase().includes(term);
+      }
+      if (clientSearchMode === 'date') {
+        return c.created_at && c.created_at.split('T')[0] === term;
+      }
+      return c.nom.toLowerCase().includes(term) || c.prenom.toLowerCase().includes(term) || c.cin.toLowerCase().includes(term);
+    });
 
   const stats = [
     { label: 'Total Clients', value: formData?.clients.length || 0, Icon: HiOutlineUserGroup, bg: '#EEF2FF', color: '#4F46E5' },
@@ -1341,20 +1353,6 @@ export default function AccountManagement({ openClientModal = false, openAccount
                   <div style={{ width: 32, height: 32, borderRadius: '50%', border: '2px solid #E4DDD1', borderTopColor: '#B8963E', animation: 'spin 0.8s linear infinite', margin: '0 auto 16px' }}></div>
                   <p style={{ fontSize: 13, color: 'var(--text-muted)' }}>Mise à jour de la liste...</p>
                 </div>
-              ) : activeTab === 'accounts' && !search ? (
-                <div style={{ padding: '80px 32px', textAlign: 'center' }}>
-                  <div style={{ 
-                    width: 64, height: 64, background: 'var(--cream)', borderRadius: '50%', 
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', 
-                    margin: '0 auto 24px', color: 'var(--gold)' 
-                  }}>
-                    <HiOutlineSearch size={32} />
-                  </div>
-                  <h3 className="syne" style={{ fontSize: 20, fontWeight: 700, color: 'var(--navy)', marginBottom: 8 }}>Recherche de Comptes</h3>
-                  <p style={{ color: 'var(--text-secondary)', maxWidth: 400, margin: '0 auto' }}>
-                    Veuillez saisir un critère dans la barre de recherche ci-dessus pour consulter les comptes.
-                  </p>
-                </div>
               ) : activeTab === 'accounts' ? (
                 <table>
                   <thead>
@@ -1421,21 +1419,7 @@ export default function AccountManagement({ openClientModal = false, openAccount
                     )}
                   </tbody>
                 </table>
-              ) : activeTab === 'clients' && !search ? (
-                <div style={{ padding: '80px 32px', textAlign: 'center' }}>
-                  <div style={{ 
-                    width: 64, height: 64, background: 'var(--cream)', borderRadius: '50%', 
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', 
-                    margin: '0 auto 24px', color: 'var(--gold)' 
-                  }}>
-                    <HiOutlineSearch size={32} />
-                  </div>
-                  <h3 className="syne" style={{ fontSize: 20, fontWeight: 700, color: 'var(--navy)', margin: '0 0 8px 0' }}>Recherche de Clients</h3>
-                  <p style={{ color: 'var(--text-secondary)', maxWidth: 400, margin: '0 auto' }}>
-                    Veuillez saisir un critère dans la barre de recherche ci-dessus pour consulter les dossiers clients.
-                  </p>
-                </div>
-              ) : (
+              ) : activeTab === 'clients' ? (
                 <table>
                   <thead>
                     <tr>
@@ -1447,26 +1431,7 @@ export default function AccountManagement({ openClientModal = false, openAccount
                     </tr>
                   </thead>
                   <tbody>
-                    {formData?.clients
-                      .filter(c => {
-                        const t = search.toLowerCase();
-                        if (!t) return false; // Hide all if search is empty
-                        
-                        if (clientSearchMode === 'name') {
-                          return c.nom.toLowerCase().includes(t) || c.prenom.toLowerCase().includes(t);
-                        }
-                        if (clientSearchMode === 'cin') {
-                          return c.cin.toLowerCase().includes(t);
-                        }
-                        if (clientSearchMode === 'date') {
-                          // The 'date' input value is YYYY-MM-DD
-                          const clientDate = new Date(c.created_at).toISOString().split('T')[0];
-                          return clientDate === t;
-                        }
-                        
-                        // Default 'all'
-                        return c.nom.toLowerCase().includes(t) || c.prenom.toLowerCase().includes(t) || c.cin.toLowerCase().includes(t);
-                      })
+                    {visibleClients
                       .slice((clientPage - 1) * clientsPerPage, clientPage * clientsPerPage)
                       .map(c => (
                         <tr key={c.id}>
@@ -1489,9 +1454,9 @@ export default function AccountManagement({ openClientModal = false, openAccount
                         </tr>
                       ))
                     }
-                    {formData?.clients.length === 0 && (
+                    {visibleClients.length === 0 && (
                       <tr>
-                        <td colSpan="4">
+                        <td colSpan="5">
                           <div className="empty-state">
                             <div className="empty-icon"><HiOutlineUserGroup size={28} /></div>
                             <p className="empty-title syne">Aucun client répertorié</p>
@@ -1501,11 +1466,11 @@ export default function AccountManagement({ openClientModal = false, openAccount
                     )}
                   </tbody>
                 </table>
-              )}
+              ) : null}
             </div>
 
             {/* Pagination for Clients */}
-            {activeTab === 'clients' && formData?.clients.length > clientsPerPage && (
+            {activeTab === 'clients' && visibleClients.length > clientsPerPage && (
               <div className="modal-footer" style={{ borderTop: '1px solid var(--border)', background: 'var(--cream)', padding: '12px 32px' }}>
                 <div style={{ display: 'flex', gap: 8 }}>
                   <button 

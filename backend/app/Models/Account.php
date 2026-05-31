@@ -52,4 +52,19 @@ class Account extends Model
     {
         return $this->belongsTo(User::class, 'created_by');
     }
+
+    public function depots()
+    {
+        return $this->hasMany(Depot::class);
+    }
+
+    public function retraits()
+    {
+        return $this->hasMany(Retrait::class);
+    }
+
+    public function cheques()
+    {
+        return $this->hasMany(Cheque::class);
+    }
 }

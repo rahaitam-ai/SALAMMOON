@@ -44,7 +44,7 @@ class AccountController extends Controller
         if ($request->has('search')) {
             $search = $request->search;
             $mode = $request->get('search_mode', 'all');
-            
+
             $query->where(function($mainQ) use ($search, $mode) {
                 if ($mode === 'name') {
                     $mainQ->whereHas('client', function($q) use ($search) {
@@ -98,8 +98,8 @@ class AccountController extends Controller
         }
 
         return response()->json([
-            'clients' => $agence_id 
-                ? Client::with('creator')->where('agence_id', $agence_id)->get() 
+            'clients' => $agence_id
+                ? Client::with('creator')->where('agence_id', $agence_id)->get()
                 : Client::with('creator')->all(),
             'account_types' => AccountType::where('is_active', true)->get(),
             'packs' => Pack::with('products')->where('is_active', true)->get(),
@@ -266,5 +266,30 @@ class AccountController extends Controller
         $pdf->setPaper('A4', 'portrait');
 
         return $pdf->download("RIB_" . $client->cin . ".pdf");
+    }
+
+    public function generateAttestationSoldePdf($id)
+    {
+        $account = Account::with(['client.agence', 'type', 'pack', 'products'])->findOrFail($id);
+
+        $client = $account->client;
+        $creationDate = \Carbon\Carbon::parse($account->created_at)->format('d/m/Y');
+        $agenceName = $client && $client->agence ? $client->agence->nom : 'Al Barid Bank';
+        $agenceCode = $client && $client->agence ? $client->agence->code_agence : 'ABB';
+        $agenceVille = $client && $client->agence ? ($client->agence->ville ?? 'Maroc') : 'Maroc';
+        $issuedAt = \Carbon\Carbon::now();
+        $issueDate = $issuedAt->format('d/m/Y');
+        $issueTime = $issuedAt->format('H:i');
+        $reference = 'ATS' . $issuedAt->format('YmdHis') . str_pad($account->id, 4, '0', STR_PAD_LEFT);
+        $tellerName = auth()->user()->name ?? auth()->user()->nom ?? 'Guichetier';
+
+        $data = compact('account', 'client', 'creationDate', 'agenceName', 'agenceCode', 'agenceVille', 'issueDate', 'issueTime', 'reference', 'tellerName');
+
+        $fileName = 'Attestation_Solde_' . preg_replace('/\s+/', '_', trim($client->nom . '_' . $client->prenom)) . '_' . $account->numero_compte . '.pdf';
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.attestation-solde', $data);
+        $pdf->setPaper('A4', 'portrait');
+
+        return $pdf->download($fileName);
     }
 }

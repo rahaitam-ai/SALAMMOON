@@ -1,0 +1,17 @@
+﻿<Window x:Class="MonLogicielDesktop.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        Title="Mon Logiciel - Desktop" Height="520" Width="900" Background="#1E1E2D" FontFamily="Segoe UI">
+  <DockPanel>
+    <Menu DockPanel.Dock="Top" Background="#2E2E3D" Foreground="White">
+      <MenuItem Header="Fichier"><MenuItem Header="Quitter" Click="MenuQuit_Click"/></MenuItem>
+      <MenuItem Header="Modules"><MenuItem Header="Pub" Click="OpenPub_Click"/><MenuItem Header="Cuisine" Click="OpenCuisine_Click"/></MenuItem>
+    </Menu>
+    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="18">
+      <TextBlock Text="Bienvenue - Mon Logiciel" FontSize="26" Foreground="White" HorizontalAlignment="Center"/>
+      <WrapPanel HorizontalAlignment="Center" Margin="0,20,0,0">
+        <Button Width="180" Height="60" Margin="8" Content="Pub" Click="OpenPub_Click"/>
+        <Button Width="180" Height="60" Margin="8" Content="Cuisine" Click="OpenCuisine_Click"/>
+      </WrapPanel>
+    </StackPanel>
+  </DockPanel>
+</Window>
