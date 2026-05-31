@@ -72,12 +72,12 @@ export default function AdminProfileDropdown({ user, roleLabel, onLogout }) {
             }
           `}</style>
           
-          <div className="p-5 border-b border-slate-50 bg-[#fcfbf9]/65">
+          <div className="p-5 border-b border-slate-50 bg-[#fcfbf9]/65" style={{ paddingLeft: '24px' }}>
             <p className="text-[11px] font-extrabold text-slate-400 uppercase tracking-widest">Espace sécurisé</p>
             <p className="text-[15.5px] font-extrabold text-slate-800 truncate mt-1">{user?.email || 'admin@albaridbank.ma'}</p>
           </div>
 
-          <div className="p-3.5 space-y-2">
+          <div className="p-3.5 pl-5 space-y-2">
             <button
               onClick={handleProfileClick}
               className="w-full flex items-center gap-4 px-4 py-3 text-base font-bold text-slate-700 hover:text-[#d4a017] hover:bg-[#fcfbf9] rounded-2xl transition-all duration-250 cursor-pointer"

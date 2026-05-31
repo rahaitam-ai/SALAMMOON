@@ -292,4 +292,68 @@ class AccountController extends Controller
 
         return $pdf->download($fileName);
     }
+
+    public function generateHistoryPdf($id)
+    {
+        $account = Account::with(['client.agence'])->findOrFail($id);
+
+        $client = $account->client;
+
+        $agenceName = $client && $client->agence ? $client->agence->nom : 'Al Barid Bank';
+        $agenceCode = $client && $client->agence ? $client->agence->code_agence : 'ABB';
+        $agenceVille = $client && $client->agence ? ($client->agence->ville ?? 'Maroc') : 'Maroc';
+
+        $issuedAt = \Carbon\Carbon::now();
+        $issueDate = $issuedAt->format('d/m/Y');
+        $issueTime = $issuedAt->format('H:i');
+        $reference = 'HIS' . $issuedAt->format('YmdHis') . str_pad($account->id, 4, '0', STR_PAD_LEFT);
+        $tellerName = auth()->user()->name ?? auth()->user()->nom ?? 'Guichetier';
+
+        $retraits = \App\Models\Retrait::with(['cheque'])->where('account_id', $id)->latest()->get();
+        $depots = \App\Models\Depot::where('account_id', $id)->latest()->get();
+
+        $transactions = collect();
+        foreach ($retraits as $retrait) {
+            $transactions->push([
+                'id' => $retrait->id,
+                'date' => $retrait->date_operation ?? $retrait->created_at,
+                'type' => 'retrait',
+                'type_label' => 'Retrait',
+                'montant' => $retrait->montant,
+                'solde_avant' => $retrait->solde_avant,
+                'solde_apres' => $retrait->solde_apres,
+            ]);
+        }
+        foreach ($depots as $depot) {
+            $transactions->push([
+                'id' => $depot->id,
+                'date' => $depot->date_operation ?? $depot->date_depot ?? $depot->created_at,
+                'type' => 'depot',
+                'type_label' => 'Dépôt',
+                'montant' => $depot->montant,
+                'solde_avant' => $depot->ancien_solde,
+                'solde_apres' => $depot->nouveau_solde,
+            ]);
+        }
+
+        $transactions = $transactions->sortByDesc('date')->values();
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.historique-compte', [
+            'account' => $account,
+            'client' => $client,
+            'agenceName' => $agenceName,
+            'agenceCode' => $agenceCode,
+            'agenceVille' => $agenceVille,
+            'issueDate' => $issueDate,
+            'issueTime' => $issueTime,
+            'reference' => $reference,
+            'tellerName' => $tellerName,
+            'transactions' => $transactions,
+        ]);
+        $pdf->setPaper('A4', 'portrait');
+
+        $fileName = 'Historique_Compte_' . $account->numero_compte . '.pdf';
+
+        return $pdf->download($fileName);
+    }
 }

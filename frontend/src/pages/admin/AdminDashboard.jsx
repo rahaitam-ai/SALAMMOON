@@ -137,7 +137,7 @@ export default function AdminDashboard() {
   };
 
   return (
-    <div className="space-y-8 animate-fadeIn bg-[#FDFBF7] p-2 min-h-screen">
+    <div className="admin-dashboard space-y-8 animate-fadeIn bg-[#FDFBF7] p-2 min-h-screen">
       
       {/* HEADER SECTION */}
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 bg-white p-8 rounded-3xl border border-[#F2ECE4] shadow-sm">
@@ -184,14 +184,13 @@ export default function AdminDashboard() {
           <div className="absolute right-0 bottom-0 translate-x-2 translate-y-2 opacity-5 group-hover:scale-110 transition-transform">
             <Briefcase className="w-20 h-20 text-[#1E1E1E]" />
           </div>
-          <span className="text-[10px] font-bold text-[#7C6961] uppercase tracking-wider pl-1.5">Membres Siège</span>
+          <span className="stat-card-label text-[10px] font-bold text-[#7C6961] uppercase tracking-wider">Membres Siège</span>
           <div className="flex items-end justify-between mt-3">
             <div>
-              <h3 className="text-2xl font-black text-[#1E1E1E]">{stats?.total_sieges || 0}</h3>
-              <p className="text-[10px] text-gray-400 font-semibold mt-0.5">{stats?.active_sieges || 0} Actifs</p>
+              <h3 className="stat-card-number text-2xl font-black text-[#1E1E1E]">{stats?.total_sieges || 0}</h3>
             </div>
-            <div className="w-10 h-10 rounded-lg bg-[#F9F6F0] text-[#7C6961] flex items-center justify-center border border-[#F2ECE4]">
-              <Briefcase className="w-5 h-5" />
+            <div className="stat-card-icon" style={{ background: '#F9F6F0', color: '#7C6961', border: '1px solid var(--border-color)' }}>
+              <Briefcase />
             </div>
           </div>
         </div>
@@ -201,14 +200,13 @@ export default function AdminDashboard() {
           <div className="absolute right-0 bottom-0 translate-x-2 translate-y-2 opacity-5 group-hover:scale-110 transition-transform">
             <Users className="w-20 h-20 text-[#1E1E1E]" />
           </div>
-          <span className="text-[10px] font-bold text-[#7C6961] uppercase tracking-wider pl-1.5">Guichetiers</span>
+          <span className="stat-card-label text-[10px] font-bold text-[#7C6961] uppercase tracking-wider">Guichetiers</span>
           <div className="flex items-end justify-between mt-3">
             <div>
-              <h3 className="text-2xl font-black text-[#1E1E1E]">{stats?.total_guichetiers || 0}</h3>
-              <p className="text-[10px] text-gray-400 font-semibold mt-0.5">{stats?.active_guichetiers || 0} Actifs</p>
+              <h3 className="stat-card-number text-2xl font-black text-[#1E1E1E]">{stats?.total_guichetiers || 0}</h3>
             </div>
-            <div className="w-10 h-10 rounded-lg bg-[#F9F6F0] text-[#7C6961] flex items-center justify-center border border-[#F2ECE4]">
-              <Users className="w-5 h-5" />
+            <div className="stat-card-icon" style={{ background: '#F9F6F0', color: '#7C6961', border: '1px solid var(--border-color)' }}>
+              <Users />
             </div>
           </div>
         </div>
@@ -218,14 +216,13 @@ export default function AdminDashboard() {
           <div className="absolute right-0 bottom-0 translate-x-2 translate-y-2 opacity-5 group-hover:scale-110 transition-transform">
             <Building2 className="w-20 h-20 text-[#1E1E1E]" />
           </div>
-          <span className="text-[10px] font-bold text-[#7C6961] uppercase tracking-wider pl-1.5">Agences</span>
+          <span className="stat-card-label text-[10px] font-bold text-[#7C6961] uppercase tracking-wider">Agences</span>
           <div className="flex items-end justify-between mt-3">
             <div>
-              <h3 className="text-2xl font-black text-[#1E1E1E]">{stats?.total_agences || 0}</h3>
-              <p className="text-[10px] text-gray-400 font-semibold mt-0.5">Réseau national</p>
+              <h3 className="stat-card-number text-2xl font-black text-[#1E1E1E]">{stats?.total_agences || 0}</h3>
             </div>
-            <div className="w-10 h-10 rounded-lg bg-[#F9F6F0] text-[#D4A017] flex items-center justify-center border border-[#F2ECE4]">
-              <Building2 className="w-5 h-5" />
+            <div className="stat-card-icon" style={{ background: '#F9F6F0', color: '#D4A017', border: '1px solid var(--border-color)' }}>
+              <Building2 />
             </div>
           </div>
         </div>
@@ -235,14 +232,13 @@ export default function AdminDashboard() {
           <div className="absolute right-0 bottom-0 translate-x-2 translate-y-2 opacity-5 group-hover:scale-110 transition-transform">
             <Layers className="w-20 h-20 text-[#1E1E1E]" />
           </div>
-          <span className="text-[10px] font-bold text-[#7C6961] uppercase tracking-wider pl-1.5">Clients Banque</span>
+          <span className="stat-card-label text-[10px] font-bold text-[#7C6961] uppercase tracking-wider">Clients Banque</span>
           <div className="flex items-end justify-between mt-3">
             <div>
-              <h3 className="text-2xl font-black text-[#1E1E1E]">{stats?.total_clients || 0}</h3>
-              <p className="text-[10px] text-gray-400 font-semibold mt-0.5">Portefeuille physique</p>
+              <h3 className="stat-card-number text-2xl font-black text-[#1E1E1E]">{stats?.total_clients || 0}</h3>
             </div>
-            <div className="w-10 h-10 rounded-lg bg-[#F9F6F0] text-[#1E1E1E] flex items-center justify-center border border-[#F2ECE4]">
-              <Layers className="w-5 h-5" />
+            <div className="stat-card-icon" style={{ background: '#F9F6F0', color: '#1E1E1E', border: '1px solid var(--border-color)' }}>
+              <Layers />
             </div>
           </div>
         </div>

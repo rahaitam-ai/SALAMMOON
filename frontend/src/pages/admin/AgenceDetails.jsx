@@ -20,12 +20,16 @@ export default function AgenceDetails() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
 
+  // Transactions state (agency-wide)
+  const [transactions, setTransactions] = useState([]);
+  const [loadingTransactions, setLoadingTransactions] = useState(true);
+
   // Edit Guichetier Modal state
   const [editingGuichetier, setEditingGuichetier] = useState(null);
   const [editFormData, setEditFormData] = useState({ nom: '', prenom: '', email: '', cin: '', is_active: true });
   const [showEditModal, setShowEditModal] = useState(false);
 
-  useEffect(() => { fetchAgenceDetails(); }, [id]);
+  useEffect(() => { fetchAgenceDetails(); fetchTransactions(); }, [id]);
 
   const fetchAgenceDetails = async () => {
     try {
@@ -38,6 +42,51 @@ export default function AgenceDetails() {
       navigate(isSiege ? '/siege/agences' : '/admin/agences-physiques');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchTransactions = async () => {
+    setLoadingTransactions(true);
+    try {
+      const endpoint = `/admin/agences-physiques/${id}/transactions`;
+      const res = await api.get(endpoint);
+      setTransactions(res.data.transactions || []);
+    } catch (err) {
+      toast.error('Erreur lors du chargement de l\'historique des transactions');
+    } finally {
+      setLoadingTransactions(false);
+    }
+  };
+
+  const downloadTransactionsPdf = async () => {
+    try {
+      const res = await api.get(`/admin/agences-physiques/${id}/transactions/pdf`, { responseType: 'blob' });
+      const url = window.URL.createObjectURL(new Blob([res.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `historique-transactions-agence-${id}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode.removeChild(link);
+    } catch (err) {
+      toast.error('Erreur lors du téléchargement du PDF');
+    }
+  };
+
+  const downloadTransactionReceipt = async (t) => {
+    try {
+      const endpoint = t.type === 'Dépôt' ? `/admin/depots/${t.id}/recu` : `/admin/retraits/${t.id}/recu`;
+      const res = await api.get(endpoint, { responseType: 'blob' });
+      const url = window.URL.createObjectURL(new Blob([res.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      const filename = t.type === 'Dépôt' ? `recu-depot-${t.id}.pdf` : `recu-retrait-${t.id}.pdf`;
+      link.setAttribute('download', filename);
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode.removeChild(link);
+    } catch (err) {
+      toast.error('Impossible de télécharger le reçu.');
     }
   };
 
@@ -348,6 +397,62 @@ export default function AgenceDetails() {
             </div>
           </div>
         )}
+      </div>
+
+      {/* ── TRANSACTION HISTORY SECTION ── */}
+      <div className="card" style={{ borderRadius: '1rem', boxShadow: '0 4px 15px rgba(0,0,0,0.06)', overflow: 'hidden', padding: '1.5rem', marginTop: '1.5rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+          <div>
+            <p style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--primary)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.25rem' }}>Historique</p>
+            <h2 style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>Historique des Transactions de l'Agence</h2>
+          </div>
+          <div>
+            <button onClick={downloadTransactionsPdf} className="btn btn--primary" style={{ padding: '0.6rem 1rem', fontWeight: 700 }}>
+              Télécharger l'historique
+            </button>
+          </div>
+        </div>
+
+        <div className="table-responsive">
+          {loadingTransactions ? (
+            <div style={{ padding: '1.5rem', textAlign: 'center' }}>
+              <div className="spinner"></div>
+            </div>
+          ) : (
+            <table className="table">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Type</th>
+                  <th style={{ textAlign: 'right' }}>Montant (MAD)</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {transactions.length === 0 ? (
+                  <tr>
+                    <td colSpan="4" className="text-center py-5">Aucune transaction trouvée pour cette agence.</td>
+                  </tr>
+                ) : (
+                  transactions.map((t) => (
+                    <tr key={`${t.type}-${t.id}`}>
+                      <td>{t.date ? new Date(t.date).toLocaleString('fr-FR') : '-'}</td>
+                      <td>{t.type}</td>
+                      <td style={{ textAlign: 'right' }}>{Number(t.montant || 0).toLocaleString('fr-FR', { minimumFractionDigits: 2 })}</td>
+                      <td>
+                        <div style={{ display: 'flex', gap: '0.5rem' }}>
+                          <button className="btn" onClick={() => downloadTransactionReceipt(t)} style={{ padding: '0.4rem 0.6rem' }}>
+                            Télécharger le reçu
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          )}
+        </div>
       </div>
 
       {/* ── EDIT GUICHETIER MODAL ── */}

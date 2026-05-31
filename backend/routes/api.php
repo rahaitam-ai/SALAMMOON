@@ -45,10 +45,16 @@ Route::middleware('auth:sanctum')->group(function () {
 
         // Physical Agences table management
         Route::get('/agences-physiques', [\App\Http\Controllers\AgenceController::class, 'index']);
-        Route::get('/agences-physiques/:id', [\App\Http\Controllers\AgenceController::class, 'show']);
+        Route::get('/agences-physiques/{id}', [\App\Http\Controllers\AgenceController::class, 'show']);
+        Route::get('/agences-physiques/{id}/transactions', [\App\Http\Controllers\AgenceController::class, 'transactions']);
+        Route::get('/agences-physiques/{id}/transactions/pdf', [\App\Http\Controllers\AgenceController::class, 'transactionsPdf']);
         Route::post('/agences-physiques', [\App\Http\Controllers\AgenceController::class, 'store']);
-        Route::put('/agences-physiques/:id', [\App\Http\Controllers\AgenceController::class, 'update']);
-        Route::delete('/agences-physiques/:id', [\App\Http\Controllers\AgenceController::class, 'destroy']);
+        Route::put('/agences-physiques/{id}', [\App\Http\Controllers\AgenceController::class, 'update']);
+        Route::delete('/agences-physiques/{id}', [\App\Http\Controllers\AgenceController::class, 'destroy']);
+
+        // Transaction receipts (for admins viewing transaction history)
+        Route::get('/depots/{id}/recu', [\App\Http\Controllers\Api\DepotController::class, 'recuPdf']);
+        Route::get('/retraits/{id}/recu', [\App\Http\Controllers\Api\RetraitController::class, 'recuPdf']);
 
         // Activity logs
         Route::get('/logs', [AdminController::class, 'activityLogs']);
@@ -75,7 +81,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
         // Agences (Consulter les Agences)
         Route::get('/agences', [\App\Http\Controllers\AgenceController::class, 'index']);
-        Route::get('/agences/:id', [\App\Http\Controllers\AgenceController::class, 'show']);
+        Route::get('/agences/{id}', [\App\Http\Controllers\AgenceController::class, 'show']);
 
         // Account Types
         Route::get('/account-types', [AccountTypeController::class, 'index']);
@@ -114,7 +120,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('accounts/{id}/operations', [\App\Http\Controllers\Api\AccountController::class, 'operationsHistory']);
         Route::apiResource('accounts', \App\Http\Controllers\Api\AccountController::class);
     });
-    
+
     // Retrait & Dépôt per account
     Route::middleware(RoleMiddleware::class . ':agence,guichetier')->group(function () {
         Route::get('/comptes/{id}/retraits', [\App\Http\Controllers\Api\RetraitController::class, 'getByAccount']);

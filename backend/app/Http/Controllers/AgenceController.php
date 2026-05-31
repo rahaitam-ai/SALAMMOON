@@ -170,7 +170,7 @@ class AgenceController extends Controller
             $query->select('id')->from('clients')->where('agence_id', $id);
         })->count();
         $guichetiersCount = \App\Models\Guichetier::where('agence_id', $id)->count();
-        
+
         $operationsCount = \App\Models\ActivityLog::where('description', 'LIKE', "%agence%" . $agence->nom . "%")
             ->orWhere('description', 'LIKE', "%guichetier%")
             ->count();
@@ -214,5 +214,116 @@ class AgenceController extends Controller
             'guichetiers' => $guichetiers,
             'recent_clients' => $recentClients,
         ]);
+    }
+
+    /**
+     * Return all transactions (depots + retraits) for an agency
+     */
+    public function transactions($id)
+    {
+        $agence = Agence::find($id);
+        if (! $agence) {
+            return response()->json(['success' => false, 'message' => 'Agence introuvable.'], 404);
+        }
+
+        // Depots
+        $depots = \App\Models\Depot::with(['account.client'])
+            ->whereHas('account.client', function ($q) use ($id) {
+                $q->where('agence_id', $id);
+            })->get()
+            ->map(function ($d) {
+                return [
+                    'id' => $d->id,
+                    'type' => 'Dépôt',
+                    'date' => $d->created_at,
+                    'montant' => $d->montant,
+                    'reference' => $d->reference_operation ?? null,
+                    'account_id' => $d->account_id,
+                    'raw' => $d,
+                ];
+            })->toArray();
+
+        // Retraits
+        $retraits = \App\Models\Retrait::with(['account.client'])
+            ->whereHas('account.client', function ($q) use ($id) {
+                $q->where('agence_id', $id);
+            })->get()
+            ->map(function ($r) {
+                return [
+                    'id' => $r->id,
+                    'type' => 'Retrait',
+                    'date' => $r->created_at ?? $r->date_operation ?? null,
+                    'montant' => $r->montant,
+                    'reference' => $r->id,
+                    'account_id' => $r->account_id,
+                    'raw' => $r,
+                ];
+            })->toArray();
+
+        // Merge and sort desc by date
+        $transactions = array_merge($depots, $retraits);
+        usort($transactions, function ($a, $b) {
+            $ta = strtotime($a['date']);
+            $tb = strtotime($b['date']);
+            return $tb <=> $ta;
+        });
+
+        return response()->json(['success' => true, 'transactions' => $transactions]);
+    }
+
+    /**
+     * Generate a PDF with the full transaction history for an agency
+     */
+    public function transactionsPdf($id)
+    {
+        $agence = Agence::find($id);
+        if (! $agence) {
+            abort(404, 'Agence introuvable.');
+        }
+
+        $resp = $this->transactions($id);
+        $data = $resp->getData(true);
+        $transactions = $data['transactions'] ?? [];
+
+        // Format transactions for PDF
+        $formattedTransactions = [];
+        $totalAmount = 0;
+        $dates = [];
+
+        foreach ($transactions as $t) {
+            $dateObj = \Carbon\Carbon::parse($t['date']);
+            $dates[] = $dateObj;
+            $montant = floatval($t['montant'] ?? 0);
+            $totalAmount += $montant;
+
+            $formattedTransactions[] = [
+                'date_formatted' => $dateObj->format('d/m/Y H:i'),
+                'type' => $t['type'],
+                'montant' => $montant,
+                'id' => $t['id'],
+            ];
+        }
+
+        // Calculate period
+        $periodStart = count($dates) > 0 ? min($dates)->format('d/m/Y') : date('d/m/Y');
+        $periodEnd = count($dates) > 0 ? max($dates)->format('d/m/Y') : date('d/m/Y');
+        $generatedDate = date('d/m/Y');
+        $generatedTime = date('H:i:s');
+
+        // Generate filename: Historique_Transactions_AL_BOUSTANE_YYYY-MM-DD.pdf
+        $filename = 'Historique_Transactions_' . str_replace(' ', '_', $agence->nom) . '_' . date('Y-m-d') . '.pdf';
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.agence-transactions', [
+            'agence' => $agence,
+            'transactions' => $formattedTransactions,
+            'totalAmount' => $totalAmount,
+            'periodStart' => $periodStart,
+            'periodEnd' => $periodEnd,
+            'generatedDate' => $generatedDate,
+            'generatedTime' => $generatedTime,
+        ]);
+        $pdf->setPaper('A4', 'portrait');
+
+        return $pdf->download($filename);
     }
 }

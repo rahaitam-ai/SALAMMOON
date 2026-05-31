@@ -615,6 +615,36 @@ button {
   font-size: 1.75rem;
 }
 
+/* Admin dashboard: rectangular icon containers (replace circular ones) */
+.admin-dashboard .stat-card-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 10px !important; /* modern rounded rectangle */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  box-sizing: border-box;
+}
+
+/* Allow easy color overrides via inline styles or existing utility classes */
+.admin-dashboard .stat-card-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* Slightly shift stat card labels to the right for better alignment */
+.admin-dashboard .stat-card-label {
+  margin-left: 0.6rem; /* nudge right */
+  display: inline-block;
+}
+
+/* Nudge the big stat numbers slightly to the right */
+.admin-dashboard .stat-card-number {
+  margin-left: 0.6rem;
+  display: inline-block;
+}
+
 .stat-card__icon--blue { background-color: rgba(0, 80, 150, 0.1); color: var(--secondary); }
 .stat-card__icon--green { background-color: rgba(16, 185, 129, 0.1); color: var(--success); }
 .stat-card__icon--orange { background-color: rgba(245, 166, 35, 0.1); color: var(--primary); }
