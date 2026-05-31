@@ -143,6 +143,12 @@ class DepotController extends Controller
         ]);
     }
 
+    public function getByAccount($accountId)
+    {
+        $depots = Depot::where('account_id', $accountId)->latest()->get();
+        return response()->json(['depots' => $depots]);
+    }
+
     /**
      * Enregistrer un dépôt (POST /api/depots)
      */

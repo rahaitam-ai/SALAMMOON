@@ -114,6 +114,12 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('accounts/{id}/operations', [\App\Http\Controllers\Api\AccountController::class, 'operationsHistory']);
         Route::apiResource('accounts', \App\Http\Controllers\Api\AccountController::class);
     });
+    
+    // Retrait & Dépôt per account
+    Route::middleware(RoleMiddleware::class . ':agence,guichetier')->group(function () {
+        Route::get('/comptes/{id}/retraits', [\App\Http\Controllers\Api\RetraitController::class, 'getByAccount']);
+        Route::get('/comptes/{id}/depots', [\App\Http\Controllers\Api\DepotController::class, 'getByAccount']);
+    });
 
     // Agence routes
     Route::middleware(RoleMiddleware::class . ':agence,guichetier')->prefix('agence')->group(function () {

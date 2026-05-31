@@ -384,6 +384,43 @@ export default function AccountDetail() {
               </div>
             )}
           </div>
+
+          <div style={{ marginTop: '1.5rem' }}>
+            <button
+              type="button"
+              onClick={() => navigate(`/agence/comptes/${id}/historique`)}
+              style={{
+                background: '#d4a017',
+                color: '#0f1929',
+                border: 'none',
+                padding: '12px 24px',
+                borderRadius: '12px',
+                fontSize: '14px',
+                fontWeight: 700,
+                cursor: 'pointer',
+                boxShadow: '0 4px 12px rgba(212, 160, 23, 0.25)',
+                transition: 'all 0.2s',
+                fontFamily: 'Inter, sans-serif',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 8,
+                width: '100%',
+                justifyContent: 'center'
+              }}
+              onMouseOver={(e) => {
+                e.currentTarget.style.transform = 'translateY(-1px)';
+                e.currentTarget.style.boxShadow = '0 6px 16px rgba(212, 160, 23, 0.35)';
+                e.currentTarget.style.background = '#fae650';
+              }}
+              onMouseOut={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = '0 4px 12px rgba(212, 160, 23, 0.25)';
+                e.currentTarget.style.background = '#d4a017';
+              }}
+            >
+              📜 Voir l’historique
+            </button>
+          </div>
         </div>
 
         <div className="modal-footer" style={{ background: '#fafaf9', padding: '24px 32px', borderTop: '1px solid #f1ece6', display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>

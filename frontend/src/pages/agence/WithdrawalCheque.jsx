@@ -7,6 +7,7 @@ function WithdrawalCheque() {
   const [cin, setCin] = useState('');
   const [client, setClient] = useState(null);
   const [account, setAccount] = useState(null);
+  const [selectedAccountId, setSelectedAccountId] = useState(null);
   const [clientTrouve, setClientTrouve] = useState(false);
   const [amount, setAmount] = useState('');
   const [chequeNumber, setChequeNumber] = useState('');
@@ -21,11 +22,37 @@ function WithdrawalCheque() {
   const inputClass =
     'mt-3 h-[65px] w-full rounded-[14px] border border-slate-200 bg-white px-[18px] text-[20px] text-slate-900 shadow-sm outline-none transition duration-200 focus:border-[#D4A017] focus:ring-2 focus:ring-[#D4A017]/20';
 
+  const getTodayString = () => {
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, '0');
+    const dd = String(today.getDate()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}`;
+  };
+
+  const isDateExpired = (dateStr) => {
+    if (!dateStr) return false;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const inputDate = new Date(dateStr);
+    inputDate.setHours(0, 0, 0, 0);
+    return inputDate < today;
+  };
+
+  const isInsufficientBalance = () => {
+    if (!account || !amount) return false;
+    const montant = parseFloat(String(amount).replace(',', '.'));
+    if (isNaN(montant) || montant <= 0) return false;
+    const soldeActuel = Number(account.balance);
+    return montant > soldeActuel;
+  };
+
   const searchClient = async () => {
     setMessage('');
     setMessageType('');
     setClient(null);
     setAccount(null);
+    setSelectedAccountId(null);
     setClientTrouve(false);
 
     if (!cin.trim()) {
@@ -37,8 +64,16 @@ function WithdrawalCheque() {
     setLoading(true);
     try {
       const response = await api.get('/clients/search', { params: { cin } });
-      setClient(response.data.client);
-      setAccount(response.data.client.accounts[0] || null);
+      const fetchedClient = response.data.client;
+      setClient(fetchedClient);
+      
+      if (fetchedClient.accounts && fetchedClient.accounts.length > 0) {
+        setSelectedAccountId(fetchedClient.accounts[0].id);
+        setAccount(fetchedClient.accounts[0]);
+      } else {
+        setAccount(null);
+      }
+      
       setMessage('Client trouvé avec succès.');
       setMessageType('success');
       setClientTrouve(true);
@@ -50,6 +85,12 @@ function WithdrawalCheque() {
       setLoading(false);
     }
   };
+  
+  const handleAccountChange = (accountId) => {
+    setSelectedAccountId(accountId);
+    const selectedAccount = client.accounts.find(acc => acc.id === parseInt(accountId));
+    setAccount(selectedAccount);
+  };
 
   const continueToConfirmation = () => {
     if (!account) {
@@ -58,20 +99,26 @@ function WithdrawalCheque() {
       return;
     }
 
-    const montant = parseFloat(amount.replace(',', '.'));
-    if (!montant || montant <= 0) {
+    const montant = parseFloat(String(amount).replace(',', '.'));
+    if (isNaN(montant) || montant <= 0) {
       setMessage('Veuillez saisir un montant de retrait valide.');
       setMessageType('warning');
       return;
     }
 
-    if (!chequeNumber || !beneficiaireNom || !beneficiairePrenom || !beneficiaireCin) {
+    if (!chequeNumber || !beneficiaireNom || !beneficiairePrenom || !beneficiaireCin || !beneficiaireCinExpiration) {
       setMessage('Veuillez renseigner toutes les informations du chèque et du bénéficiaire.');
       setMessageType('warning');
       return;
     }
 
-    if (montant > Number(account.balance)) {
+    if (isDateExpired(beneficiaireCinExpiration)) {
+      setMessage('La date d\'expiration du CIN doit être aujourd\'hui ou une date future.');
+      setMessageType('warning');
+      return;
+    }
+
+    if (isInsufficientBalance()) {
       setMessage('⚠️ Solde insuffisant pour ce chèque. Vous pouvez générer un avis de rejet.');
       setMessageType('warning');
       return;
@@ -124,7 +171,7 @@ function WithdrawalCheque() {
         beneficiaire_cin: beneficiaireCin,
         beneficiaire_cin_expiration: beneficiaireCinExpiration || null,
         montant,
-        motif: 'Provision insuffisante',
+        motif: 'Solde insuffisant',
       });
 
       const avisId = response.data.avis.id;
@@ -148,6 +195,11 @@ function WithdrawalCheque() {
       setLoading(false);
     }
   };
+
+  const showRejectionButton = clientTrouve && isInsufficientBalance();
+  const isFormValid = clientTrouve && account && chequeNumber && beneficiaireNom && 
+                      beneficiairePrenom && beneficiaireCin && beneficiaireCinExpiration && 
+                      !isDateExpired(beneficiaireCinExpiration);
 
   return (
     <div style={{ maxWidth: 720, margin: '0 auto', padding: '2rem 1.5rem', fontFamily: "'Inter', sans-serif" }}>
@@ -221,6 +273,23 @@ function WithdrawalCheque() {
                     </span>
                   </div>
 
+                  {client.accounts && client.accounts.length > 1 && (
+                    <div className="mb-6">
+                      <label className="block text-[20px] font-semibold text-slate-700 mb-3">Sélectionnez un compte</label>
+                      <select
+                        className={inputClass}
+                        value={selectedAccountId}
+                        onChange={(e) => handleAccountChange(e.target.value)}
+                      >
+                        {client.accounts.map((acc) => (
+                          <option key={acc.id} value={acc.id}>
+                            {acc.numero_compte} - Solde: {Number(acc.balance).toFixed(2)} Dhs
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+                  
                   <div className="grid gap-6 sm:grid-cols-2">
                     <div className="rounded-[18px] bg-slate-50 p-5">
                       <p className="text-[16px] uppercase tracking-[0.2em] text-slate-500">Nom complet</p>
@@ -312,30 +381,42 @@ function WithdrawalCheque() {
                         <label className="block text-[20px] font-semibold text-slate-700">Expiration CIN</label>
                         <input
                           type="date"
+                          min={getTodayString()}
                           value={beneficiaireCinExpiration}
                           onChange={(e) => setBeneficiaireCinExpiration(e.target.value)}
                           className={inputClass}
                         />
+                        {isDateExpired(beneficiaireCinExpiration) && (
+                          <p className="mt-2 text-sm font-semibold text-rose-600">
+                            ❌ Date invalide, veuillez choisir aujourd'hui ou une date future
+                          </p>
+                        )}
                       </div>
                     </div>
                   </div>
 
                   <div className="mt-8 flex flex-col gap-4 md:flex-row">
-                    <button
-                      type="button"
-                      onClick={continueToConfirmation}
-                      className="inline-flex h-14 w-full items-center justify-center rounded-[14px] bg-[#D4A017] px-8 text-[20px] font-bold text-white shadow-md shadow-[#D4A017]/20 transition duration-200 hover:bg-[#b7880f]"
-                    >
-                      Continuer
-                    </button>
-                    <button
-                      type="button"
-                      onClick={generateRejection}
-                      disabled={loading}
-                      className="inline-flex h-14 w-full items-center justify-center rounded-[14px] bg-rose-500 px-8 text-[20px] font-bold text-white shadow-md shadow-rose-500/20 transition duration-200 hover:bg-rose-600 disabled:cursor-not-allowed disabled:opacity-60"
-                    >
-                      Générer l'avis de rejet
-                    </button>
+                    {!showRejectionButton && (
+                      <button
+                        type="button"
+                        onClick={continueToConfirmation}
+                        disabled={!isFormValid || isInsufficientBalance()}
+                        className="inline-flex h-14 w-full items-center justify-center rounded-[14px] bg-[#D4A017] px-8 text-[20px] font-bold text-white shadow-md shadow-[#D4A017]/20 transition duration-200 hover:bg-[#b7880f] disabled:opacity-60 disabled:cursor-not-allowed"
+                      >
+                        Continuer
+                      </button>
+                    )}
+
+                    {showRejectionButton && (
+                      <button
+                        type="button"
+                        onClick={generateRejection}
+                        disabled={loading}
+                        className="inline-flex h-14 w-full items-center justify-center rounded-[14px] bg-rose-600 px-8 text-[20px] font-bold text-white shadow-md shadow-rose-600/20 transition duration-200 hover:bg-rose-700 disabled:opacity-60 disabled:cursor-not-allowed"
+                      >
+                        {loading ? 'Génération...' : 'Générer l\'avis de rejet'}
+                      </button>
+                    )}
                   </div>
                 </section>
               </div>

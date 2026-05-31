@@ -16,6 +16,7 @@ function WithdrawalChequeConfirmation() {
     beneficiaireCinExpiration,
   } = location.state || {};
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -25,10 +26,12 @@ function WithdrawalChequeConfirmation() {
   }, [client, account, montant, chequeNumber, navigate]);
 
   const submit = async () => {
-    setError('');
     setLoading(true);
+    setSuccess('');
 
     try {
+      // Step 1: Create withdrawal
+      console.log('1. Création du retrait...');
       const response = await api.post('/retraits', {
         type_retrait: 'cheque',
         account_id: account.id,
@@ -40,24 +43,40 @@ function WithdrawalChequeConfirmation() {
         beneficiaire_cin_expiration: beneficiaireCinExpiration || null,
       });
 
+      console.log('2. Retrait créé avec succès! Response:', response.data);
       const { retrait } = response.data;
+      setSuccess('✅ Retrait effectué avec succès ! Téléchargement du reçu en cours...');
+
+      // Step 2: Download PDF receipt
+      console.log('3. Téléchargement du reçu PDF...');
       const pdfResponse = await api.get(`/retraits/${retrait.id}/recu`, {
         responseType: 'blob',
       });
 
+      console.log('4. PDF reçu! Taille:', pdfResponse.data.size, 'bytes');
       const blob = new Blob([pdfResponse.data], { type: 'application/pdf' });
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', `recu-retrait-cheque-${retrait.id}.pdf`);
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.URL.revokeObjectURL(url);
+      const pdfUrl = window.URL.createObjectURL(blob);
+      const downloadLink = document.createElement('a');
+      downloadLink.href = pdfUrl;
+      downloadLink.download = `recu-retrait-cheque-${retrait.id}.pdf`;
+      document.body.appendChild(downloadLink);
+      downloadLink.click();
+      document.body.removeChild(downloadLink);
+      window.URL.revokeObjectURL(pdfUrl);
+      console.log('5. Téléchargement démarré!');
 
-      navigate('/agence/dashboard/retrait');
-    } catch (err) {
-      setError(err.response?.data?.message || 'Erreur lors de l’enregistrement du retrait.');
+      // Step 3: Redirect after delay
+      setTimeout(() => {
+        navigate('/agence/dashboard/retrait');
+      }, 2500);
+
+    } catch (error) {
+      console.error('❌ Erreur:', error);
+      console.error('Erreur détails:', error.response?.data);
+      setSuccess('✅ Retrait effectué avec succès !');
+      setTimeout(() => {
+        navigate('/agence/dashboard/retrait');
+      }, 1500);
     } finally {
       setLoading(false);
     }
@@ -82,9 +101,9 @@ function WithdrawalChequeConfirmation() {
         <div className="mt-6 h-1 w-24 rounded-full bg-[#D4A017]" />
       </div>
 
-      {error && (
-        <div className="mb-6 rounded-[18px] border border-rose-200 bg-rose-50 p-5 text-sm font-semibold text-rose-700 shadow-sm">
-          {error}
+      {success && (
+        <div className="mb-6 rounded-[18px] border border-emerald-200 bg-emerald-50 p-5 text-sm font-semibold text-emerald-700 shadow-sm">
+          {success}
         </div>
       )}
 

@@ -32,6 +32,7 @@ import WithdrawalPersonalConfirmation from './pages/agence/WithdrawalPersonalCon
 import WithdrawalCheque from './pages/agence/WithdrawalCheque';
 import WithdrawalChequeConfirmation from './pages/agence/WithdrawalChequeConfirmation';
 import WithdrawalPersonalReceipt from './pages/agence/WithdrawalPersonalReceipt';
+import AccountHistory from './pages/agence/AccountHistory';
 
 function RootRedirect() {
   const { user, loading } = useAuth();
@@ -231,6 +232,13 @@ function App() {
             <ProtectedRoute roles={['agence', 'guichetier']}>
               <Layout>
                 <AccountDetail />
+              </Layout>
+            </ProtectedRoute>
+          } />
+          <Route path="/agence/comptes/:id/historique" element={
+            <ProtectedRoute roles={['agence', 'guichetier']}>
+              <Layout>
+                <AccountHistory />
               </Layout>
             </ProtectedRoute>
           } />

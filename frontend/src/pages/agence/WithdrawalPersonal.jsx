@@ -10,13 +10,12 @@ function WithdrawalPersonal() {
   const [client, setClient] = useState(null);
   const [account, setAccount] = useState(null);
   const [amount, setAmount] = useState('');
-  const [typeRetrait, setTypeRetrait] = useState('personnel');
   const [message, setMessage] = useState('');
   const [messageType, setMessageType] = useState('');
   const [loading, setLoading] = useState(false);
 
   const inputClass =
-    'mt-3 h-[65px] w-full rounded-[14px] border border-slate-200 bg-white px-[18px] text-[20px] text-slate-900 shadow-sm outline-none transition duration-200 focus:border-[#D4A017] focus:ring-2 focus:ring-[#D4A017]/20';
+    'mt-3 h-[80px] w-full rounded-[14px] border border-slate-200 bg-white px-[22px] text-[22px] text-slate-900 shadow-sm outline-none transition duration-200 focus:border-[#D4A017] focus:ring-2 focus:ring-[#D4A017]/20';
 
   const searchClient = async () => {
     setMessage('');
@@ -65,12 +64,12 @@ function WithdrawalPersonal() {
     }
 
     navigate('/agence/retrait/personnel/confirmation', {
-      state: { client, account, montant, typeRetrait },
+      state: { client, account, montant },
     });
   };
 
   return (
-    <div style={{ maxWidth: 720, margin: '0 auto', padding: '2rem 1.5rem', fontFamily: "'Inter', sans-serif" }}>
+    <div style={{ maxWidth: 980, margin: '0 auto', padding: '3rem 2rem', fontFamily: "'Inter', sans-serif" }}>
       <div style={{ marginBottom: 32 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
           <div style={{ width: 44, height: 44, borderRadius: 12, background: 'rgba(212,160,23,0.12)', color: '#d4a017', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22 }}>
@@ -202,16 +201,6 @@ function WithdrawalPersonal() {
                       className={`${inputClass} pl-[55px]`}
                     />
                   </div>
-
-                  <label className="block text-[20px] font-semibold text-slate-700 mt-4">Type de retrait</label>
-                  <select
-                    value={typeRetrait}
-                    onChange={(e) => setTypeRetrait(e.target.value)}
-                    className={`${inputClass} mt-3 h-[60px] px-4 py-2`}
-                  >
-                    <option value="personnel">Retrait Personnel</option>
-                    <option value="cheque">Retrait par Chèque</option>
-                  </select>
 
                   <button
                     type="button"
